@@ -1,0 +1,32 @@
+{
+  "expo": {
+    "name": "Elite Golf",
+    "slug": "drc-elite-golf",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#e9eff5"
+    },
+    "android": {
+      "package": "com.dalecopeland.drcelitegolf",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#e9eff5"
+      },
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "FOREGROUND_SERVICE"
+      ]
+    },
+    "extra": {
+      "eas": {
+        "projectId": "bfde93e4-409b-40e0-87d4-0675f85b1534"
+      }
+    }
+  }
+}
