@@ -2,7 +2,7 @@
   "expo": {
     "name": "DRC Elite Golf",
     "slug": "drc-elite-golf",
-    "version": "2.5.0",
+    "version": "2.5.1",
     "orientation": "portrait",
     "icon": "./content.png",
     "userInterfaceStyle": "light",
@@ -22,7 +22,7 @@
     ],
     "android": {
       "package": "com.dalecopeland.drcelitegolf",
-      "versionCode": 8,
+      "versionCode": 9,
       "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION", "RECORD_AUDIO"],
       "adaptiveIcon": {
         "foregroundImage": "./content.png",
