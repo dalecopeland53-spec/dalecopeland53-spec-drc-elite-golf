@@ -2,26 +2,22 @@
   "expo": {
     "name": "DRC Elite Golf",
     "slug": "drc-elite-golf",
-    "version": "1.0.0",
+    "version": "2.0.0",
     "orientation": "portrait",
     "icon": "./content.png",
     "userInterfaceStyle": "light",
     "splash": {
       "image": "./content.png",
       "resizeMode": "contain",
-      "backgroundColor": "#091C18"
+      "backgroundColor": "#ECE8DF"
     },
     "android": {
       "package": "com.dalecopeland.drcelitegolf",
+      "versionCode": 2,
       "adaptiveIcon": {
         "foregroundImage": "./content.png",
-        "backgroundColor": "#091C18"
-      },
-      "permissions": [
-        "ACCESS_COARSE_LOCATION",
-        "ACCESS_FINE_LOCATION",
-        "FOREGROUND_SERVICE"
-      ]
+        "backgroundColor": "#ECE8DF"
+      }
     },
     "extra": {
       "eas": {
