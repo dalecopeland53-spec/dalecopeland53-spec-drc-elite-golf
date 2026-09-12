@@ -7,12 +7,11 @@ import {
   TouchableOpacity,
   View,
   ScrollView,
-  TextInput,
   Image,
 } from 'react-native';
 
 const BLUE = '#0E3153';
-const BLUE_2 = '#164D78';
+const BLUE2 = '#174F7A';
 const GOLD = '#B78935';
 const BG = '#ECE8DF';
 const PAPER = '#F8F5EE';
@@ -20,349 +19,246 @@ const PANEL = '#E3DED3';
 const LINE = '#C9C1B2';
 const INK = '#102A42';
 const MUTED = '#6C7680';
+const GREEN = '#2F6B4F';
 
-const DEFAULT_BAG = [
-  ['Driver', 230], ['3 Wood', 210], ['5 Wood', 195], ['4 Iron', 180],
-  ['5 Iron', 170], ['6 Iron', 160], ['7 Iron', 150], ['8 Iron', 140],
-  ['9 Iron', 130], ['PW', 115], ['GW', 100], ['SW', 85], ['LW', 70], ['Putter', 0],
+const SHOTS = [
+  { id: '#084', speed: 183, tempo: '3.1 : 1' },
+  { id: '#083', speed: 177, tempo: '3.0 : 1' },
+  { id: '#082', speed: 180, tempo: '3.2 : 1' },
 ];
 
-function SmallBrand() {
+const systems = [
+  { key: 'SIM', label: 'Simulator', icon: '◉' },
+  { key: 'RADAR', label: 'Radar', icon: '⌁' },
+  { key: 'MAP', label: 'Map', icon: '◇' },
+  { key: 'SYNC', label: 'Sync', icon: '↻' },
+];
+
+function Metric({ label, value, small }) {
   return (
-    <View style={styles.brandBar}>
-      <Image source={require('./content.png')} style={styles.brandIcon} />
-      <View style={{ flex: 1 }}>
-        <Text style={styles.brandTitle}>DRC ELITE GOLF</Text>
-        <Text style={styles.brandTag}>PLAY • PRACTICE • IMPROVE</Text>
-      </View>
+    <View style={styles.metricBox}>
+      <Text style={styles.metricLabel}>{label}</Text>
+      <Text style={[styles.metricValue, small && styles.metricValueSmall]}>{value}</Text>
     </View>
   );
 }
 
-function Card({ title, children, style }) {
+function Card({ title, children }) {
   return (
-    <View style={[styles.card, style]}>
+    <View style={styles.card}>
       {!!title && <Text style={styles.cardTitle}>{title}</Text>}
       {children}
     </View>
   );
 }
 
-function NavButton({ label, icon, active, onPress }) {
-  return (
-    <TouchableOpacity style={styles.navButton} onPress={onPress} activeOpacity={0.8}>
-      <Text style={[styles.navIcon, active && styles.navActive]}>{icon}</Text>
-      <Text style={[styles.navLabel, active && styles.navActive]}>{label}</Text>
-    </TouchableOpacity>
-  );
-}
-
 export default function App() {
-  const [tab, setTab] = useState('TRACK');
-  const [shot, setShot] = useState(1);
-  const [club, setClub] = useState('7 Iron');
-  const [carry, setCarry] = useState('150');
-  const [shape, setShape] = useState('STRAIGHT');
-  const [result, setResult] = useState('GOOD');
-  const [bag, setBag] = useState(DEFAULT_BAG);
-  const [history, setHistory] = useState([]);
+  const [system, setSystem] = useState('SIM');
+  const [metric, setMetric] = useState(true);
+  const [connected, setConnected] = useState(false);
 
-  const avgCarry = useMemo(() => {
-    if (!history.length) return 0;
-    return Math.round(history.reduce((sum, item) => sum + Number(item.carry || 0), 0) / history.length);
-  }, [history]);
+  const distance = metric ? '250.8 m' : '274.3 yd';
+  const speed = metric ? '180 kph' : '111.8 mph';
+  const unitLabel = metric ? 'METRIC' : 'IMPERIAL';
 
-  const saveShot = () => {
-    const distance = Math.max(0, Number(carry) || 0);
-    setHistory(prev => [
-      { id: Date.now().toString(), shot, club, carry: distance, shape, result },
-      ...prev,
-    ]);
-    setShot(prev => prev + 1);
-  };
+  const title = useMemo(() => systems.find(s => s.key === system)?.label || 'Simulator', [system]);
 
-  const adjustBag = (index, delta) => {
-    setBag(prev => prev.map((item, i) => {
-      if (i !== index || item[0] === 'Putter') return item;
-      return [item[0], Math.max(0, item[1] + delta)];
-    }));
-  };
-
-  const renderTrack = () => (
-    <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-      <SmallBrand />
-
-      <View style={styles.heroStrip}>
-        <View>
-          <Text style={styles.heroEyebrow}>PRACTICE WITH PURPOSE</Text>
-          <Text style={styles.heroMain}>SHOT {shot}</Text>
+  const renderSimulator = () => (
+    <>
+      <Card title="DRC SIMULATOR SYSTEM">
+        <View style={styles.statusRow}>
+          <Text style={styles.statusLabel}>Tracking Status</Text>
+          <Text style={styles.ready}>READY</Text>
         </View>
-        <View style={styles.liveBadge}><Text style={styles.liveBadgeText}>ELITE SESSION</Text></View>
-      </View>
-
-      <View style={styles.threeGrid}>
-        <Card style={styles.thirdCard} title="CLUB">
-          <Text style={styles.bigMetric}>{club}</Text>
-        </Card>
-        <Card style={styles.thirdCard} title="CARRY">
-          <Text style={styles.bigMetric}>{carry || '0'} m</Text>
-        </Card>
-        <Card style={styles.thirdCard} title="SHOT">
-          <Text style={styles.bigMetricSmall}>{shape}</Text>
-        </Card>
-      </View>
-
-      <Card title="ENTER SHOT">
-        <View style={styles.rowBetween}>
-          <Text style={styles.label}>Club</Text>
-          <View style={styles.segmentRow}>
-            {['7 Iron', 'PW', 'Driver'].map(name => (
-              <TouchableOpacity key={name} onPress={() => setClub(name)} style={[styles.segment, club === name && styles.segmentActive]}>
-                <Text style={[styles.segmentText, club === name && styles.segmentTextActive]}>{name}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+        <View style={styles.twoCol}>
+          <Metric label="DISTANCE" value={distance} />
+          <Metric label="SHOT" value="225" />
         </View>
-
-        <View style={styles.inputRow}>
-          <Text style={styles.label}>Carry</Text>
-          <TextInput
-            value={carry}
-            onChangeText={setCarry}
-            keyboardType="number-pad"
-            maxLength={3}
-            style={styles.distanceInput}
-          />
-          <Text style={styles.unit}>m</Text>
-        </View>
-
-        <Text style={styles.labelTop}>Shape</Text>
-        <View style={styles.segmentRowWide}>
-          {['DRAW', 'STRAIGHT', 'FADE'].map(name => (
-            <TouchableOpacity key={name} onPress={() => setShape(name)} style={[styles.segmentWide, shape === name && styles.segmentActive]}>
-              <Text style={[styles.segmentText, shape === name && styles.segmentTextActive]}>{name}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        <Text style={styles.labelTop}>Result</Text>
-        <View style={styles.segmentRowWide}>
-          {['LEFT', 'GOOD', 'RIGHT'].map(name => (
-            <TouchableOpacity key={name} onPress={() => setResult(name)} style={[styles.segmentWide, result === name && styles.segmentActive]}>
-              <Text style={[styles.segmentText, result === name && styles.segmentTextActive]}>{name}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        <TouchableOpacity style={styles.primaryButton} onPress={saveShot} activeOpacity={0.85}>
-          <Text style={styles.primaryButtonText}>SAVE SHOT</Text>
-        </TouchableOpacity>
-      </Card>
-
-      <Card title="SESSION SNAPSHOT">
-        <View style={styles.metricRow}>
-          <View style={styles.metricBox}><Text style={styles.metricValue}>{history.length}</Text><Text style={styles.metricLabel}>SHOTS</Text></View>
-          <View style={styles.metricBox}><Text style={styles.metricValue}>{avgCarry}</Text><Text style={styles.metricLabel}>AVG CARRY</Text></View>
-          <View style={styles.metricBox}><Text style={styles.metricValue}>{result}</Text><Text style={styles.metricLabel}>LAST RESULT</Text></View>
+        <View style={styles.twoCol}>
+          <Metric label="CLUB SPEED" value={speed} />
+          <Metric label="TEMPO" value="3.1 : 1" />
         </View>
       </Card>
-    </ScrollView>
+      <History metric={metric} />
+    </>
   );
 
-  const renderHistory = () => (
-    <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-      <SmallBrand />
-      <Card title="SHOT HISTORY">
-        {!history.length ? (
-          <View style={styles.emptyBox}>
-            <Text style={styles.emptyTitle}>NO SHOTS SAVED YET</Text>
-            <Text style={styles.emptyText}>Record a few shots and your session history will appear here.</Text>
-          </View>
-        ) : history.map(item => (
-          <View key={item.id} style={styles.historyRow}>
-            <View style={styles.shotBubble}><Text style={styles.shotBubbleText}>{item.shot}</Text></View>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.historyClub}>{item.club}</Text>
-              <Text style={styles.historySub}>{item.shape} • {item.result}</Text>
-            </View>
-            <Text style={styles.historyCarry}>{item.carry} m</Text>
-          </View>
-        ))}
-      </Card>
-      {!!history.length && (
-        <TouchableOpacity style={styles.secondaryButton} onPress={() => setHistory([])}>
-          <Text style={styles.secondaryButtonText}>CLEAR SESSION</Text>
-        </TouchableOpacity>
-      )}
-    </ScrollView>
-  );
-
-  const renderBag = () => (
-    <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-      <SmallBrand />
-      <Card title="MY BAG • 14 CLUBS">
-        {bag.map((item, index) => (
-          <View key={item[0]} style={styles.bagRow}>
-            <Text style={styles.bagClub}>{item[0]}</Text>
-            <TouchableOpacity style={styles.stepButton} onPress={() => adjustBag(index, -5)} disabled={item[0] === 'Putter'}>
-              <Text style={styles.stepText}>−</Text>
-            </TouchableOpacity>
-            <View style={styles.bagDistanceBox}><Text style={styles.bagDistance}>{item[1]} m</Text></View>
-            <TouchableOpacity style={styles.stepButton} onPress={() => adjustBag(index, 5)} disabled={item[0] === 'Putter'}>
-              <Text style={styles.stepText}>+</Text>
-            </TouchableOpacity>
-          </View>
-        ))}
-      </Card>
-    </ScrollView>
-  );
-
-  const renderMore = () => (
-    <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-      <SmallBrand />
-      <Card title="ELITE GOLF">
-        <View style={styles.infoRow}><Text style={styles.infoLabel}>APP</Text><Text style={styles.infoValue}>DRC Elite Golf</Text></View>
-        <View style={styles.infoRow}><Text style={styles.infoLabel}>VERSION</Text><Text style={styles.infoValue}>1.0.0</Text></View>
-        <View style={styles.infoRow}><Text style={styles.infoLabel}>MODE</Text><Text style={styles.infoValue}>Standalone</Text></View>
-      </Card>
-      <Card title="QUICK GUIDE">
-        <Text style={styles.guideText}>1. Set your club and carry distance.</Text>
-        <Text style={styles.guideText}>2. Choose shot shape and result.</Text>
-        <Text style={styles.guideText}>3. Save every shot you want to analyse.</Text>
-        <Text style={styles.guideText}>4. Use History to review the session.</Text>
-        <Text style={styles.guideText}>5. Keep My Bag distances current.</Text>
-      </Card>
-      <View style={styles.logoPanel}>
-        <Image source={require('./content.png')} style={styles.logoPanelImage} resizeMode="contain" />
+  const renderRadar = () => (
+    <Card title="DRC RADAR SYSTEM">
+      <View style={styles.statusRow}>
+        <Text style={styles.statusLabel}>Tracking Status</Text>
+        <Text style={styles.ready}>READY</Text>
       </View>
-    </ScrollView>
+      <View style={styles.twoCol}>
+        <Metric label="CLUB SPEED" value={speed} />
+        <Metric label="SWING" value="225" />
+      </View>
+      <View style={styles.twoCol}>
+        <Metric label="BALL SPEED" value={metric ? '246 kph' : '152.9 mph'} />
+        <Metric label="SMASH" value="1.37" />
+      </View>
+      <Text style={styles.note}>Radar panel is integrated and ready for live sensor data when hardware input is connected.</Text>
+    </Card>
+  );
+
+  const renderMap = () => (
+    <Card title="DRC MAP SYSTEM">
+      <View style={styles.mapBox}>
+        <View style={styles.flagPole} />
+        <Text style={styles.flag}>⚑</Text>
+        <View style={styles.playerDot} />
+        <Text style={styles.mapText}>COURSE MAP</Text>
+      </View>
+      <View style={styles.threeCol}>
+        <Metric label="FRONT" value={metric ? '142 m' : '155 yd'} small />
+        <Metric label="CENTRE" value={metric ? '151 m' : '165 yd'} small />
+        <Metric label="BACK" value={metric ? '160 m' : '175 yd'} small />
+      </View>
+      <Text style={styles.note}>Map module is kept inside this app and can use the course/GPS data layer without opening another app.</Text>
+    </Card>
+  );
+
+  const renderSync = () => (
+    <Card title="DRC SYNC SYSTEM">
+      <View style={styles.syncHero}>
+        <Text style={styles.syncIcon}>↻</Text>
+        <Text style={styles.syncTitle}>{connected ? 'CONNECTED' : 'READY TO CONNECT'}</Text>
+        <Text style={styles.syncText}>Keep Simulator, Radar and Map data together in one Elite Golf session.</Text>
+      </View>
+      <TouchableOpacity style={styles.primaryButton} onPress={() => setConnected(v => !v)}>
+        <Text style={styles.primaryButtonText}>{connected ? 'DISCONNECT' : 'CONNECT DRC SYNC'}</Text>
+      </TouchableOpacity>
+    </Card>
   );
 
   return (
     <SafeAreaView style={styles.safe}>
       <StatusBar barStyle="dark-content" backgroundColor={BG} />
       <View style={styles.page}>
-        <View style={styles.content}>
-          {tab === 'TRACK' && renderTrack()}
-          {tab === 'HISTORY' && renderHistory()}
-          {tab === 'BAG' && renderBag()}
-          {tab === 'MORE' && renderMore()}
+        <View style={styles.header}>
+          <Image source={require('./content.png')} style={styles.logo} resizeMode="contain" />
+          <View style={styles.headerText}>
+            <Text style={styles.title}>DRC GOLF ELITE</Text>
+            <Text style={styles.subtitle}>4-IN-1 PERFORMANCE SYSTEM</Text>
+          </View>
+          <TouchableOpacity style={styles.unitButton} onPress={() => setMetric(v => !v)}>
+            <Text style={styles.unitButtonText}>{unitLabel}</Text>
+          </TouchableOpacity>
         </View>
 
-        <View style={styles.navDock}>
-          <NavButton label="Track" icon="◉" active={tab === 'TRACK'} onPress={() => setTab('TRACK')} />
-          <NavButton label="History" icon="▥" active={tab === 'HISTORY'} onPress={() => setTab('HISTORY')} />
-          <NavButton label="My Bag" icon="♢" active={tab === 'BAG'} onPress={() => setTab('BAG')} />
-          <NavButton label="More" icon="•••" active={tab === 'MORE'} onPress={() => setTab('MORE')} />
+        <View style={styles.systemBar}>
+          {systems.map(item => (
+            <TouchableOpacity
+              key={item.key}
+              style={[styles.systemButton, system === item.key && styles.systemButtonActive]}
+              onPress={() => setSystem(item.key)}
+            >
+              <Text style={[styles.systemIcon, system === item.key && styles.systemTextActive]}>{item.icon}</Text>
+              <Text style={[styles.systemText, system === item.key && styles.systemTextActive]}>{item.label}</Text>
+            </TouchableOpacity>
+          ))}
         </View>
+
+        <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+          <View style={styles.sectionHeading}>
+            <Text style={styles.sectionEyebrow}>ACTIVE SYSTEM</Text>
+            <Text style={styles.sectionTitle}>{title.toUpperCase()}</Text>
+          </View>
+          {system === 'SIM' && renderSimulator()}
+          {system === 'RADAR' && renderRadar()}
+          {system === 'MAP' && renderMap()}
+          {system === 'SYNC' && renderSync()}
+        </ScrollView>
       </View>
     </SafeAreaView>
+  );
+}
+
+function History({ metric }) {
+  return (
+    <Card title="RECENT RUNS HISTORY">
+      <View style={styles.tableHeader}>
+        <Text style={[styles.th, styles.col1]}>SHOT ID</Text>
+        <Text style={[styles.th, styles.col2]}>SPEED VALUE</Text>
+        <Text style={[styles.th, styles.col3]}>TEMPO RATIO</Text>
+      </View>
+      {SHOTS.map(item => (
+        <View key={item.id} style={styles.tableRow}>
+          <Text style={[styles.td, styles.col1]}>{item.id}</Text>
+          <Text style={[styles.tdStrong, styles.col2]}>{metric ? `${item.speed} kph` : `${(item.speed * 0.621371).toFixed(1)} mph`}</Text>
+          <Text style={[styles.td, styles.col3]}>{item.tempo}</Text>
+        </View>
+      ))}
+    </Card>
   );
 }
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: BG },
   page: { flex: 1, backgroundColor: BG },
-  content: { flex: 1 },
-  scroll: { paddingHorizontal: 12, paddingTop: 8, paddingBottom: 14 },
-
-  brandBar: {
-    minHeight: 58,
+  header: {
+    minHeight: 64,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: PAPER,
-    borderWidth: 1,
-    borderColor: LINE,
-    borderRadius: 13,
     paddingHorizontal: 10,
     paddingVertical: 6,
-    marginBottom: 8,
-  },
-  brandIcon: { width: 48, height: 48, borderRadius: 11, marginRight: 10 },
-  brandTitle: { color: BLUE, fontSize: 20, fontWeight: '900', letterSpacing: 0.8 },
-  brandTag: { color: GOLD, fontSize: 8.5, fontWeight: '900', letterSpacing: 1.2, marginTop: 2 },
-
-  heroStrip: {
-    backgroundColor: BLUE,
-    borderRadius: 12,
-    paddingHorizontal: 13,
-    paddingVertical: 10,
-    marginBottom: 8,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  heroEyebrow: { color: '#D9C8A2', fontSize: 8.5, fontWeight: '900', letterSpacing: 1.2 },
-  heroMain: { color: '#FFFFFF', fontSize: 22, fontWeight: '900', marginTop: 1 },
-  liveBadge: { borderWidth: 1, borderColor: GOLD, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5 },
-  liveBadgeText: { color: '#FFFFFF', fontSize: 8, fontWeight: '900', letterSpacing: 0.8 },
-
-  threeGrid: { flexDirection: 'row', gap: 6, marginBottom: 8 },
-  thirdCard: { flex: 1, marginBottom: 0, minHeight: 76 },
-  card: {
+    borderBottomWidth: 1,
+    borderBottomColor: LINE,
     backgroundColor: PAPER,
-    borderWidth: 1,
-    borderColor: LINE,
-    borderRadius: 12,
-    padding: 10,
-    marginBottom: 8,
   },
-  cardTitle: { color: BLUE, fontSize: 9, fontWeight: '900', letterSpacing: 1.1, marginBottom: 7 },
-  bigMetric: { color: INK, fontSize: 16, fontWeight: '900' },
-  bigMetricSmall: { color: INK, fontSize: 11, fontWeight: '900' },
+  logo: { width: 46, height: 46, marginRight: 8 },
+  headerText: { flex: 1 },
+  title: { color: BLUE, fontSize: 19, fontWeight: '900', letterSpacing: 0.7 },
+  subtitle: { color: GOLD, fontSize: 8, fontWeight: '900', letterSpacing: 1.1, marginTop: 1 },
+  unitButton: { borderWidth: 1, borderColor: BLUE, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 7 },
+  unitButtonText: { color: BLUE, fontSize: 8, fontWeight: '900' },
 
-  rowBetween: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 },
-  label: { width: 44, color: MUTED, fontSize: 9, fontWeight: '900', textTransform: 'uppercase' },
-  labelTop: { color: MUTED, fontSize: 9, fontWeight: '900', textTransform: 'uppercase', marginTop: 3, marginBottom: 5 },
-  segmentRow: { flex: 1, flexDirection: 'row', gap: 5 },
-  segmentRowWide: { flexDirection: 'row', gap: 5, marginBottom: 7 },
-  segment: { flex: 1, minHeight: 32, alignItems: 'center', justifyContent: 'center', backgroundColor: PANEL, borderRadius: 8, borderWidth: 1, borderColor: LINE },
-  segmentWide: { flex: 1, minHeight: 32, alignItems: 'center', justifyContent: 'center', backgroundColor: PANEL, borderRadius: 8, borderWidth: 1, borderColor: LINE },
-  segmentActive: { backgroundColor: BLUE, borderColor: BLUE },
-  segmentText: { color: INK, fontSize: 8.5, fontWeight: '900' },
-  segmentTextActive: { color: '#FFFFFF' },
+  systemBar: { flexDirection: 'row', padding: 7, gap: 5, backgroundColor: PANEL, borderBottomWidth: 1, borderBottomColor: LINE },
+  systemButton: { flex: 1, minHeight: 48, borderRadius: 9, borderWidth: 1, borderColor: LINE, backgroundColor: PAPER, alignItems: 'center', justifyContent: 'center' },
+  systemButtonActive: { backgroundColor: BLUE, borderColor: BLUE },
+  systemIcon: { color: BLUE, fontSize: 15, fontWeight: '900', lineHeight: 17 },
+  systemText: { color: BLUE, fontSize: 8, fontWeight: '900', marginTop: 2 },
+  systemTextActive: { color: '#FFFFFF' },
 
-  inputRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 5 },
-  distanceInput: { flex: 1, height: 36, borderWidth: 1, borderColor: LINE, borderRadius: 8, backgroundColor: '#FFFFFF', paddingHorizontal: 10, color: BLUE, fontSize: 16, fontWeight: '900', textAlign: 'center' },
-  unit: { width: 24, marginLeft: 5, color: MUTED, fontSize: 10, fontWeight: '900' },
+  scroll: { padding: 10, paddingBottom: 20 },
+  sectionHeading: { marginBottom: 7 },
+  sectionEyebrow: { color: GOLD, fontSize: 8, fontWeight: '900', letterSpacing: 1.2 },
+  sectionTitle: { color: BLUE, fontSize: 18, fontWeight: '900', marginTop: 1 },
 
-  primaryButton: { height: 40, borderRadius: 9, backgroundColor: BLUE, borderWidth: 1, borderColor: GOLD, alignItems: 'center', justifyContent: 'center', marginTop: 4 },
-  primaryButtonText: { color: '#FFFFFF', fontSize: 11, fontWeight: '900', letterSpacing: 1.1 },
-  secondaryButton: { height: 38, borderRadius: 9, borderWidth: 1, borderColor: BLUE, alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
-  secondaryButtonText: { color: BLUE, fontSize: 10, fontWeight: '900', letterSpacing: 0.8 },
+  card: { backgroundColor: PAPER, borderWidth: 1, borderColor: LINE, borderRadius: 12, padding: 10, marginBottom: 8 },
+  cardTitle: { color: BLUE, fontSize: 10, fontWeight: '900', letterSpacing: 1, marginBottom: 8 },
+  statusRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: PANEL, borderRadius: 8, paddingHorizontal: 9, paddingVertical: 7, marginBottom: 7 },
+  statusLabel: { color: MUTED, fontSize: 9, fontWeight: '800' },
+  ready: { color: GREEN, fontSize: 9, fontWeight: '900', letterSpacing: 0.8 },
 
-  metricRow: { flexDirection: 'row', gap: 6 },
-  metricBox: { flex: 1, minHeight: 58, borderRadius: 9, backgroundColor: PANEL, alignItems: 'center', justifyContent: 'center', padding: 5 },
-  metricValue: { color: BLUE, fontSize: 15, fontWeight: '900', textAlign: 'center' },
-  metricLabel: { color: MUTED, fontSize: 7.5, fontWeight: '900', marginTop: 3, textAlign: 'center' },
+  twoCol: { flexDirection: 'row', gap: 6, marginBottom: 6 },
+  threeCol: { flexDirection: 'row', gap: 6, marginTop: 7 },
+  metricBox: { flex: 1, minHeight: 62, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: LINE, borderRadius: 9, padding: 8, justifyContent: 'center' },
+  metricLabel: { color: MUTED, fontSize: 7.5, fontWeight: '900', letterSpacing: 0.8, marginBottom: 4 },
+  metricValue: { color: INK, fontSize: 18, fontWeight: '900' },
+  metricValueSmall: { fontSize: 14 },
 
-  emptyBox: { paddingVertical: 20, alignItems: 'center' },
-  emptyTitle: { color: BLUE, fontWeight: '900', fontSize: 11, letterSpacing: 0.7 },
-  emptyText: { color: MUTED, textAlign: 'center', marginTop: 6, fontSize: 10, lineHeight: 15, maxWidth: 260 },
-  historyRow: { minHeight: 54, flexDirection: 'row', alignItems: 'center', borderTopWidth: 1, borderTopColor: LINE, paddingVertical: 7 },
-  shotBubble: { width: 30, height: 30, borderRadius: 15, backgroundColor: BLUE, alignItems: 'center', justifyContent: 'center', marginRight: 9 },
-  shotBubbleText: { color: '#FFFFFF', fontWeight: '900', fontSize: 10 },
-  historyClub: { color: INK, fontSize: 11, fontWeight: '900' },
-  historySub: { color: MUTED, fontSize: 8.5, fontWeight: '700', marginTop: 2 },
-  historyCarry: { color: BLUE, fontSize: 14, fontWeight: '900' },
+  tableHeader: { flexDirection: 'row', paddingVertical: 6, borderBottomWidth: 1, borderBottomColor: LINE },
+  tableRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#E7E1D7' },
+  th: { color: MUTED, fontSize: 7.5, fontWeight: '900' },
+  td: { color: INK, fontSize: 10, fontWeight: '700' },
+  tdStrong: { color: BLUE, fontSize: 10, fontWeight: '900' },
+  col1: { width: '25%' },
+  col2: { width: '40%', textAlign: 'center' },
+  col3: { width: '35%', textAlign: 'right' },
 
-  bagRow: { minHeight: 42, flexDirection: 'row', alignItems: 'center', borderTopWidth: 1, borderTopColor: LINE, paddingVertical: 4 },
-  bagClub: { flex: 1, color: INK, fontSize: 10, fontWeight: '900' },
-  stepButton: { width: 34, height: 30, borderRadius: 7, backgroundColor: BLUE, alignItems: 'center', justifyContent: 'center' },
-  stepText: { color: '#FFFFFF', fontSize: 18, fontWeight: '900', lineHeight: 20 },
-  bagDistanceBox: { width: 76, height: 30, marginHorizontal: 5, borderRadius: 7, backgroundColor: PANEL, alignItems: 'center', justifyContent: 'center' },
-  bagDistance: { color: BLUE, fontSize: 11, fontWeight: '900' },
+  note: { color: MUTED, fontSize: 9, lineHeight: 14, marginTop: 4 },
 
-  infoRow: { minHeight: 36, flexDirection: 'row', alignItems: 'center', borderTopWidth: 1, borderTopColor: LINE },
-  infoLabel: { width: 80, color: MUTED, fontSize: 8, fontWeight: '900' },
-  infoValue: { flex: 1, color: INK, fontSize: 10, fontWeight: '900', textAlign: 'right' },
-  guideText: { color: INK, fontSize: 10, lineHeight: 19, fontWeight: '700' },
-  logoPanel: { height: 210, borderRadius: 12, overflow: 'hidden', backgroundColor: '#091C18', borderWidth: 1, borderColor: GOLD, marginBottom: 10 },
-  logoPanelImage: { width: '100%', height: '100%' },
+  mapBox: { height: 190, borderRadius: 10, backgroundColor: '#DDE3DC', borderWidth: 1, borderColor: LINE, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+  flagPole: { position: 'absolute', width: 2, height: 54, backgroundColor: BLUE, top: 44 },
+  flag: { position: 'absolute', top: 35, marginLeft: 13, color: BLUE, fontSize: 23 },
+  playerDot: { position: 'absolute', bottom: 28, width: 14, height: 14, borderRadius: 7, backgroundColor: GOLD, borderWidth: 2, borderColor: '#FFFFFF' },
+  mapText: { color: BLUE2, fontWeight: '900', fontSize: 10, letterSpacing: 1.4 },
 
-  navDock: { height: 64, flexDirection: 'row', backgroundColor: '#F8F5EE', borderTopWidth: 1, borderTopColor: LINE, paddingBottom: 3 },
-  navButton: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  navIcon: { color: MUTED, fontSize: 18, fontWeight: '900', lineHeight: 20 },
-  navLabel: { color: MUTED, fontSize: 8.5, fontWeight: '900', marginTop: 2 },
-  navActive: { color: BLUE },
+  syncHero: { alignItems: 'center', paddingVertical: 16 },
+  syncIcon: { color: BLUE, fontSize: 38, fontWeight: '900' },
+  syncTitle: { color: BLUE, fontSize: 16, fontWeight: '900', marginTop: 3 },
+  syncText: { color: MUTED, textAlign: 'center', fontSize: 9, lineHeight: 14, marginTop: 5, maxWidth: 270 },
+  primaryButton: { minHeight: 42, backgroundColor: BLUE, borderRadius: 9, alignItems: 'center', justifyContent: 'center', marginTop: 4 },
+  primaryButtonText: { color: '#FFFFFF', fontSize: 10, fontWeight: '900', letterSpacing: 0.9 },
 });
