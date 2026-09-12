@@ -2,7 +2,7 @@
   "expo": {
     "name": "DRC Elite Golf",
     "slug": "drc-elite-golf",
-    "version": "2.4.1",
+    "version": "2.5.0",
     "orientation": "portrait",
     "icon": "./content.png",
     "userInterfaceStyle": "light",
@@ -11,10 +11,19 @@
       "resizeMode": "contain",
       "backgroundColor": "#ECE8DF"
     },
+    "plugins": [
+      [
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "Allow DRC Elite Golf to use the microphone for DRC Voice.",
+          "speechRecognitionPermission": "Allow DRC Elite Golf to recognise speech for DRC Voice."
+        }
+      ]
+    ],
     "android": {
       "package": "com.dalecopeland.drcelitegolf",
-      "versionCode": 7,
-      "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"],
+      "versionCode": 8,
+      "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION", "RECORD_AUDIO"],
       "adaptiveIcon": {
         "foregroundImage": "./content.png",
         "backgroundColor": "#ECE8DF"
