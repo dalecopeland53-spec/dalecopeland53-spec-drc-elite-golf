@@ -5,6 +5,7 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
+  Pressable,
   View,
   ScrollView,
   Image,
@@ -51,11 +52,16 @@ export default function App() {
   const [metric, setMetric] = useState(true);
   const [connected, setConnected] = useState(false);
 
-  const openSystem = key => setScreen(key);
+  const openSystem = key => {
+    if (key === 'SIM' || key === 'RADAR' || key === 'MAP' || key === 'SYNC') {
+      setScreen(key);
+    }
+  };
+
   const goHome = () => setScreen('HOME');
 
   const unitButton = (
-    <TouchableOpacity style={styles.unitButton} onPress={() => setMetric(v => !v)}>
+    <TouchableOpacity style={styles.unitButton} onPress={() => setMetric(v => !v)} activeOpacity={0.7}>
       <Text style={styles.unitButtonText}>{metric ? 'METRIC' : 'IMPERIAL'}</Text>
     </TouchableOpacity>
   );
@@ -63,7 +69,7 @@ export default function App() {
   const Header = ({ title = 'DRC GOLF ELITE', back = false }) => (
     <View style={styles.header}>
       {back ? (
-        <TouchableOpacity style={styles.backButton} onPress={goHome}>
+        <TouchableOpacity style={styles.backButton} onPress={goHome} activeOpacity={0.7}>
           <Text style={styles.backButtonText}>‹ HOME</Text>
         </TouchableOpacity>
       ) : (
@@ -80,28 +86,31 @@ export default function App() {
   const Home = () => (
     <View style={styles.page}>
       <Header />
-      <ScrollView contentContainerStyle={styles.homeScroll} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={styles.homeScroll} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="always">
         <View style={styles.hero}>
           <Text style={styles.heroSmall}>DRC ELITE GOLF</Text>
           <Text style={styles.heroTitle}>SELECT A SYSTEM</Text>
           <Text style={styles.heroText}>Tap any system below to open it.</Text>
         </View>
 
-        <View style={styles.launchGrid}>
+        <View style={styles.launchGrid} pointerEvents="box-none">
           {SYSTEMS.map(item => (
-            <TouchableOpacity
+            <Pressable
               key={item.key}
-              style={styles.launchCard}
-              activeOpacity={0.8}
+              style={({ pressed }) => [styles.launchCard, pressed && styles.launchCardPressed]}
               onPress={() => openSystem(item.key)}
+              android_ripple={{ color: '#D8D0C2' }}
+              hitSlop={6}
+              accessibilityRole="button"
+              accessibilityLabel={`Open ${item.label}`}
             >
               <Text style={styles.launchIcon}>{item.icon}</Text>
               <Text style={styles.launchTitle}>{item.label}</Text>
               <Text style={styles.launchSub}>{item.sub}</Text>
-              <View style={styles.openPill}>
+              <View style={styles.openPill} pointerEvents="none">
                 <Text style={styles.openPillText}>OPEN</Text>
               </View>
-            </TouchableOpacity>
+            </Pressable>
           ))}
         </View>
       </ScrollView>
@@ -187,7 +196,7 @@ export default function App() {
             <Text style={styles.syncTitle}>{connected ? 'CONNECTED' : 'READY TO CONNECT'}</Text>
             <Text style={styles.syncText}>Connect Simulator, Radar and Map inside one Elite Golf session.</Text>
           </View>
-          <TouchableOpacity style={styles.primaryButton} onPress={() => setConnected(v => !v)}>
+          <TouchableOpacity style={styles.primaryButton} onPress={() => setConnected(v => !v)} activeOpacity={0.7}>
             <Text style={styles.primaryButtonText}>{connected ? 'DISCONNECT' : 'CONNECT DRC SYNC'}</Text>
           </TouchableOpacity>
         </Card>
@@ -252,7 +261,9 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 12,
     marginBottom: 9,
+    overflow: 'hidden',
   },
+  launchCardPressed: { opacity: 0.72, transform: [{ scale: 0.985 }] },
   launchIcon: { color: BLUE, fontSize: 28, fontWeight: '900' },
   launchTitle: { color: BLUE, fontSize: 14, fontWeight: '900', marginTop: 8 },
   launchSub: { color: MUTED, fontSize: 9, marginTop: 3 },
